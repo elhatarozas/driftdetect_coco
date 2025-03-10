@@ -1,0 +1,15 @@
+__pycache__
+/driftdetect
+reverse.py
+resnetpca10.*
+driftsim.py
+pandastest.py
+val2017
+ann.json
+annotations_trainval2017
+*.pt
+cifar
+asdasd.png
+compare.png
+asdasd.png
+annotations_trainval2017.zip
