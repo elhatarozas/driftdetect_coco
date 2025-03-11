@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  annotations:
+  labels:
+    release: prometheus
+  name: sample-monitor-label-test
+  namespace: model
+spec:
+  namespaceSelector:
+    matchNames:
+    - model
+  podMetricsEndpoints:
+  - interval: 1s
+    port: aggr-metric
+  selector:
+    matchLabels:
+      component: predictor
