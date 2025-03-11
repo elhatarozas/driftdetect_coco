@@ -1,0 +1,21 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: monitoring2
+  namespace: model
+  labels:
+    test: test
+  annotations:
+    serving.kserve.io/enable-metric-aggregation: "true"
+    serving.kserve.io/enable-prometheus-scraping: "true"
+    prometheus.kserve.io/port: '8080'
+    prometheus.kserve.io/path: "/metrics"
+spec:
+  predictor:
+    serviceAccountName: sa
+    containers:
+      - name: kserve-container
+        image: jogalois/custom-model:v1
+        env:
+          - name: STORAGE_URI
+            value: s3://mlflow/0/f3940a08f0424d5a93c4f96284446905/artifacts/model

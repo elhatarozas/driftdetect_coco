@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: yolo-monitor
+  namespace: model
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      monitorName: yolo
+  namespaceSelector:
+    matchNames:
+      - model 
+  podMetricsEndpoints:
+  - port: aggr-metric
+    interval: 10s

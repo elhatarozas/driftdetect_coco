@@ -1,0 +1,16 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: yolo-v8-monitored
+  namespace: model
+spec:
+  predictor:
+    serviceAccountName: sa
+    model:
+      modelFormat:
+        name: mlflow
+      storageUri: s3://mlflow/4/cafd85b4a5c7495e95c20eec31e2bd97/artifacts/model
+      protocolVersion: v2
+    logger:
+      mode: all
+      url: http://monitoring-yolo.model.10.97.138.18.nip.io/v2/models/model/infer

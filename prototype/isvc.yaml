@@ -1,0 +1,15 @@
+apiVersion: "serving.kserve.io/v1beta1"
+kind: "InferenceService"
+metadata:
+  name: "sklearn-iris3"
+  namespace: model
+spec:
+  predictor:
+    model:
+      modelFormat:
+        name: sklearn
+      storageUri: "gs://kfserving-examples/models/sklearn/1.0/model"
+      protocolVersion: v2
+    logger:
+      url: http://monitoring3.model.10.97.138.18.nip.io/v2/models/model/infer
+      mode: request
