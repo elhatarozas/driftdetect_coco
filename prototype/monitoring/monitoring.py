@@ -76,6 +76,7 @@ class Monitoring(Model):
             self.mmd = REGISTRY._names_to_collectors["mmd"]
             self.p_value = REGISTRY._names_to_collectors["p_value"]
         
+        self.enough_data.set(0)
         self.queue = queue.Queue()
         self.dd_thread = threading.Thread(target=self.drift_detect_loop, daemon=True)
         self.dd_thread.start()
@@ -103,17 +104,18 @@ class Monitoring(Model):
             self.detector.add_data(input)
             result = self.detector.predict()
             logging.logger.info(result)
-            self.enough_data.set(result["enough-data"]*1) # bool to int
-            self.drift_detected.set(result["drift-detected"]*1)
-            self.p_value.set(result["p-value"])
-            self.mmd.set(result["mmd"])
+            if result["enough-data"]:
+                self.enough_data.set(result["enough-data"]*1) # bool to int
+                self.drift_detected.set(result["drift-detected"]*1)
+                self.p_value.set(result["p-value"])
+                self.mmd.set(result["mmd"])
 
 parser = argparse.ArgumentParser(parents=[model_server.parser])
 args, _ = parser.parse_known_args()
 
 class ImageDrift:
 
-    def __init__(self, training_data, *, window_size=50, dimred_size=10, preprocessing="default", dimred="none", p_value_threshhold=.05):
+    def __init__(self, training_data, *, window_size=100, dimred_size=10, preprocessing="default", dimred="none", p_value_threshhold=.05):
         self.dimred : str = dimred
         self.dimred_size=dimred_size
         self.window_size = window_size
@@ -125,7 +127,7 @@ class ImageDrift:
         
 
     def init_preprocess_training(self, preprocessing):
-        return transforms.Compose([ # transforms.ToTensor(), 
+        return transforms.Compose([# transforms.ToTensor(), 
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
     
     def init_training_data(self, training_data):
@@ -141,8 +143,10 @@ class ImageDrift:
             self.pca = torchdrift.reducers.PCAReducer(self.dimred_size)
             self.pca.fit(self.tensors)
             self.tensors = self.pca(self.tensors)
+        print(self.tensors.shape)
         self.drift_detect = torchdrift.detectors.KernelMMDDriftDetector(return_p_value=False)
         self.drift_detect.fit(self.tensors)
+
 
     def init_transform(self):
         # Expecting data in Tensorform
@@ -158,26 +162,22 @@ class ImageDrift:
         self.transform= nn.Sequential(*operators)
 
     def add_data(self, data):
-        data = self.preprocess(data)
-        self.testdata = torch.cat([self.testdata, self.transform(torch.unsqueeze(data, 0))])
-        if self.testdata.shape[0] > self.window_size:
-            self.testdata = self.testdata[1:, ...]
+        data = self.transform(torch.unsqueeze(self.preprocess(data), 0))
+        self.testdata = torch.cat([self.testdata, data])
 
     def predict(self):
         result = {}
         if self.testdata.shape[0] < self.window_size:
             result["drift-detected"] = False
             result["enough-data"] = False
-            result["p-value"] = -1
-            result["mmd"] = -1
             return result
         result["enough-data"] = True
-        a = time.time()
         result["mmd"] = self.drift_detect(self.testdata).item()
         result["p-value"] = self.drift_detect.compute_p_value(self.testdata).item()
-        logging.logger.info(f"Zeit für Drift Detection:{time.time() - a}")
         result["drift-detected"] = result["p-value"]  < self.p_value_threshhold
+        self.testdata = torch.empty([0] + list(self.tensors.shape[1:]))
         return result
+
 
 if __name__ == "__main__":
     if args.configure_logging:

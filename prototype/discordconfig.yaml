@@ -1,0 +1,12 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: discord-receiver
+  namespace: prometheus
+spec:
+  route:
+    receiver: discord
+  receivers:
+    - name: discord
+      webhookConfigs:
+        - url: 'https://discord.com/api/webhooks/1349713415530217482/O758aL5RthrI_CG5ve-dQjHRasaTWEMSS-rG337FvAxHm0aZ_1isEunHZ34lbWV8nuL1'

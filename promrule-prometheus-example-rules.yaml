@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"monitoring.coreos.com/v1","kind":"PrometheusRule","metadata":{"annotations":{},"creationTimestamp":null,"labels":{"prometheus":"example","release":"prometheus","role":"alert-rules"},"name":"prometheus-example-rules","namespace":"prometheus"},"spec":{"groups":[{"name":"./example.rules","rules":[{"alert":"ExampleAlert","expr":"vector(1)"}]}]}}
+    prometheus-operator-validated: "true"
+  creationTimestamp: "2025-03-13T10:37:46Z"
+  generation: 1
+  labels:
+    prometheus: example
+    release: prometheus
+    role: alert-rules
+  name: prometheus-example-rules
+  namespace: prometheus
+  resourceVersion: "5900698"
+  uid: d6b41966-b7e9-409e-a423-6fa55b77a344
+spec:
+  groups:
+  - name: example
+    rules:
+    - alert: ExampleAlert
+      expr: vector(1)

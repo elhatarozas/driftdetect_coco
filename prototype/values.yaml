@@ -1,0 +1,3 @@
+alertmanager:
+  alertmanagerSpec:
+    replicas: 3

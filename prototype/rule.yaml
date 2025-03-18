@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  creationTimestamp: null
+  labels:
+    prometheus: driftdetection
+    role: alert-rules
+    release: prometheus
+  name: prometheus-driftdetection-rules
+spec:
+  groups:
+  - name: driftdetection.rules
+    rules:
+    - alert: DriftDetectionAlert
+      expr: drift_detected == 1
+      for: 1m
+      keep_firing_for: 5m
+      labels:
+        severity: High
